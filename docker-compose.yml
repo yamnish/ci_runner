@@ -1,0 +1,26 @@
+services:
+  github-runner:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      - RUNNER_SCOPE=${RUNNER_SCOPE:-user}
+      - RUNNER_NAME=${RUNNER_NAME:-my-runner}
+      - LABELS=${LABELS:-self-hosted,linux,x64}
+      - GITHUB_USERNAME=${GITHUB_USERNAME}
+      - ACCESS_TOKEN=${ACCESS_TOKEN}
+      - ORG_NAME=${ORG_NAME:-${GITHUB_USERNAME}}
+      - CONFIGURED_ACTIONS_RUNNER_FILES_DIR=/runner-data
+    volumes:
+      - runner-data:/runner-data
+      - /var/run/docker.sock:/var/run/docker.sock
+    healthcheck:
+      test: ["CMD-SHELL", "[ -f /runner-data/.runner ] || [ -z '${ACCESS_TOKEN}' ] && echo 'ACCESS_TOKEN not set' && exit 1 || exit 0"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+volumes:
+  runner-data:
+    driver: local

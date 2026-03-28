@@ -1,0 +1,11 @@
+name: Test self-hosted runner
+
+on:
+  push:
+
+jobs:
+  test:
+    runs-on: [self-hosted, linux, x64]
+    steps:
+      - run: echo "Runner works! Host: $(hostname), Date: $(date)"
+      - run: docker --version
