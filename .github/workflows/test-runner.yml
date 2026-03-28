@@ -7,5 +7,10 @@ jobs:
   test:
     runs-on: [self-hosted, linux, x64]
     steps:
-      - run: echo "Runner works! Host: $(hostname), Date: $(date)"
-      - run: docker --version
+      - name: Check runner
+        run: |
+          echo "Runner works!"
+          echo "Host: $(hostname)"
+          echo "Date: $(date)"
+      - name: Check docker
+        run: docker --version
