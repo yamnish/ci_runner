@@ -1,0 +1,15 @@
+name: Lint - markdownlint
+description: Run markdownlint on all .md files
+
+runs:
+  using: composite
+  steps:
+    - name: Run markdownlint
+      shell: bash
+      run: |
+        docker run --rm \
+          -v "$(pwd):/workdir" \
+          -w /workdir \
+          linter-markdownlint:latest \
+          --disable MD013 MD033 MD034 MD041 -- \
+          $(find . -name '*.md' -not -path './.git/*')

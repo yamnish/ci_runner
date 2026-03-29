@@ -1,0 +1,14 @@
+name: Lint - hadolint
+description: Run hadolint on all Dockerfiles
+
+runs:
+  using: composite
+  steps:
+    - name: Run hadolint
+      shell: bash
+      run: |
+        docker run --rm \
+          -v "$(pwd):/workdir" \
+          -w /workdir \
+          linter-hadolint:latest \
+          sh -c 'find . \( -name "Dockerfile" -o -name "Dockerfile.*" \) -not -path "./.git/*" | xargs hadolint'

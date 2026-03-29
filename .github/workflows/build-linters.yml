@@ -1,0 +1,15 @@
+name: Build linter images
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'linters/**'
+
+jobs:
+  build:
+    runs-on: [self-hosted, linux, x64]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build all linter images
+        run: docker compose -f linters/docker-compose.yml build --pull

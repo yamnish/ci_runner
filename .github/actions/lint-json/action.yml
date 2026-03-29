@@ -1,0 +1,25 @@
+name: Lint - JSON
+description: Validate all .json files with jq
+
+runs:
+  using: composite
+  steps:
+    - name: Run jq lint
+      shell: bash
+      run: |
+        docker run --rm \
+          -v "$(pwd):/workdir" \
+          -w /workdir \
+          linter-jq:latest \
+          sh -c '
+            failed=0
+            find . -name "*.json" -not -path "./.git/*" | while read -r f; do
+              if jq . "$f" > /dev/null 2>&1; then
+                echo "OK: $f"
+              else
+                echo "FAIL: $f"
+                failed=1
+              fi
+            done
+            exit $failed
+          '

@@ -1,0 +1,20 @@
+name: Lint - yamllint
+description: Run yamllint on all .yml and .yaml files
+
+runs:
+  using: composite
+  steps:
+    - name: Run yamllint
+      shell: bash
+      run: |
+        docker run --rm \
+          -v "$(pwd):/code" \
+          linter-yamllint:latest \
+          yamllint -d '{
+            extends: default,
+            rules: {
+              truthy: {allowed-values: ["true", "false", "on", "off"], check-keys: false},
+              line-length: {max: 200},
+              comments: {min-spaces-from-content: 1}
+            }
+          }' /code

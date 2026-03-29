@@ -1,0 +1,28 @@
+services:
+  shellcheck:
+    build: ./shellcheck
+    image: linter-shellcheck:latest
+
+  hadolint:
+    build: ./hadolint
+    image: linter-hadolint:latest
+
+  yamllint:
+    build: ./yamllint
+    image: linter-yamllint:latest
+
+  jq:
+    build: ./jq
+    image: linter-jq:latest
+
+  markdownlint:
+    build: ./markdownlint
+    image: linter-markdownlint:latest
+
+  gitleaks:
+    build: ./gitleaks
+    image: linter-gitleaks:latest
+
+  dotenv:
+    build: ./dotenv
+    image: linter-dotenv:latest

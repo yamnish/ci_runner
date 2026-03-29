@@ -1,0 +1,13 @@
+name: Lint - gitleaks
+description: Scan for leaked secrets with gitleaks
+
+runs:
+  using: composite
+  steps:
+    - name: Run gitleaks
+      shell: bash
+      run: |
+        docker run --rm \
+          -v "$(pwd):/path" \
+          linter-gitleaks:latest \
+          detect --source /path --redact --verbose

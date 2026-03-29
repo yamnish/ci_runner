@@ -2,140 +2,121 @@
 
 Docker Compose сетап для self-hosted GitHub Actions runner на базе [myoung34/github-runner](https://github.com/myoung34/docker-github-actions-runner).
 
-## Быстрый старт
+## Первый запуск — настройка
 
 ```bash
-cp .env.example .env
-# отредактируй .env
-docker compose up -d --build
+docker compose run --rm runner
 ```
+
+Запустится интерактивный wizard, который спросит:
+- Scope (user / org / repo)
+- Registration token (не сохраняется нигде — только в памяти контейнера на время регистрации)
+- Имя runner'а
+- Лейблы
+
+После успешной регистрации wizard сам скажет что делать дальше.
+
+## Обычный запуск (после настройки)
+
+```bash
+docker compose up -d
+```
+
+Runner стартует с уже сохранённым конфигом — никаких вопросов.
 
 ---
 
-## Получение токена
+## Получение registration token
 
-Нужен **Personal Access Token (classic)** — не fine-grained, потому что fine-grained не поддерживают Actions API для user-level runner'ов.
+Токен нужен **только один раз** при регистрации. Wizard покажет точную команду под выбранный scope, но вот краткая шпаргалка:
 
-1. Открой: **GitHub → Settings → Developer settings → Personal access tokens → Tokens (classic)**
-   Прямая ссылка: https://github.com/settings/tokens
+### user scope
+Регистрирует runner для всех личных репозиториев. Использует недокументированный GitHub API.
 
-2. Нажми **Generate new token (classic)**
-
-3. Выбери scopes:
-   - `repo` — полный доступ к репозиториям (нужен для регистрации runner'а)
-   - `workflow` — доступ к GitHub Actions workflows
-
-4. Установи срок действия (рекомендую 1 год или `No expiration` для сервера)
-
-5. Скопируй токен — он показывается только один раз
-
-6. Вставь в `.env`:
-   ```
-   ACCESS_TOKEN=ghp_xxxxxxxxxxxxxxxxxxxx
-   ```
-
-> Если токен истёк или отозван — runner перестанет регистрироваться при рестарте. Контейнер упадёт с ошибкой в логах.
-
----
-
-## Конфигурация (.env)
-
-Скопируй `.env.example` в `.env` и заполни:
-
-| Переменная | Обязательная | Описание |
-|---|---|---|
-| `ACCESS_TOKEN` | да | Personal Access Token (classic) |
-| `GITHUB_USERNAME` | да | Твой GitHub username |
-| `RUNNER_SCOPE` | нет | `user` (по умолчанию) или `org` |
-| `RUNNER_NAME` | нет | Имя runner'а в GitHub UI (по умолчанию `my-runner`) |
-| `LABELS` | нет | Лейблы через запятую (по умолчанию `self-hosted,linux,x64`) |
-| `ORG_NAME` | нет | Только для `RUNNER_SCOPE=org`, если org name отличается от username |
-
-### Пример заполненного .env
-
-```env
-ACCESS_TOKEN=ghp_xxxxxxxxxxxxxxxxxxxx
-GITHUB_USERNAME=your-username
-RUNNER_SCOPE=user
-RUNNER_NAME=home-server
-LABELS=self-hosted,linux,x64
+Нужен **Classic PAT** со скоупами `repo`, `workflow`:
+```bash
+curl -s -X POST \
+  -H "Authorization: Bearer YOUR_CLASSIC_PAT" \
+  -H "Accept: application/vnd.github+json" \
+  https://api.github.com/user/actions/runners/registration-token \
+  | jq -r .token
 ```
 
----
+Создать токен: https://github.com/settings/tokens
 
-## Режимы работы
+### org scope
+Регистрирует runner для всей организации. Официальный API.
 
-### user mode (по умолчанию)
-
-```env
-RUNNER_SCOPE=user
+Нужен **Classic PAT** со скоупом `admin:org`:
+```bash
+curl -s -X POST \
+  -H "Authorization: Bearer YOUR_CLASSIC_PAT" \
+  -H "Accept: application/vnd.github+json" \
+  https://api.github.com/orgs/YOUR_ORG/actions/runners/registration-token \
+  | jq -r .token
 ```
 
-Runner регистрируется на уровне аккаунта и доступен **во всех личных репозиториях**. Использует недокументированный GitHub API (`POST /user/actions/runners/registration-token`).
+Или через браузер: `https://github.com/organizations/YOUR_ORG/settings/actions/runners/new`
 
-Виден здесь: **GitHub → Settings → Actions → Runners**
-Прямая ссылка: https://github.com/settings/actions/runners
+### repo scope
+Регистрирует runner для одного репозитория.
 
-### org mode
-
-```env
-RUNNER_SCOPE=org
-ORG_NAME=your-org-name  # опционально, если отличается от GITHUB_USERNAME
+Нужен **Classic PAT** со скоупом `repo`:
+```bash
+curl -s -X POST \
+  -H "Authorization: Bearer YOUR_CLASSIC_PAT" \
+  -H "Accept: application/vnd.github+json" \
+  https://api.github.com/repos/OWNER/REPO/actions/runners/registration-token \
+  | jq -r .token
 ```
 
-Runner регистрируется на уровне организации. Использует официальный API myoung34/github-runner.
+Или через браузер: `https://github.com/OWNER/REPO/settings/actions/runners/new`
 
-Виден здесь: **GitHub → [Org] → Settings → Actions → Runners**
+> Registration token действителен 1 час. После регистрации он больше не нужен — runner хранит свой конфиг в volume и переподключается самостоятельно.
 
 ---
 
 ## Проверка подключения
 
-### Шаг 1 — убедись, что контейнер запустился
+### 1. Убедись что контейнер запущен
 
 ```bash
 docker compose ps
 ```
 
-Статус должен быть `running`, не `exited`. Если `exited` — смотри логи:
+Статус должен быть `running`. Если `exited` — смотри логи:
 
 ```bash
-docker compose logs github-runner
+docker compose logs runner
 ```
 
-В логах успешного запуска будет что-то вроде:
+В конце успешного запуска должно быть:
 
 ```
-[runner-init] Starting GitHub Actions runner in scope: user
-[runner-init] Mode: user-level (undocumented user scope via personal API)
-[runner-init] Requesting registration token for user: your-username
-[runner-init] Registration token obtained successfully.
-[runner-init] Registering runner at: https://github.com/your-username
-...
 √ Connected to GitHub
 ```
 
-### Шаг 2 — найди runner в GitHub UI
+### 2. Найди runner в GitHub UI
 
-**Для user mode (`RUNNER_SCOPE=user`):**
+**user scope** — личные настройки аккаунта:
 
-Открой: **GitHub → (аватар) → Settings → Actions → Runners**
+GitHub → аватар (правый верхний угол) → Settings → раздел "Code, planning, and automation" → Actions → Runners
 
-Путь вручную: github.com → правый верхний угол → Your profile → Settings → слева внизу раздел "Code, planning, and automation" → Actions → Runners
+**org scope** — настройки организации:
 
-Должен появиться runner с именем, которое ты задал в `RUNNER_NAME`, со статусом **Idle** (зелёная точка).
-
-**Для org mode (`RUNNER_SCOPE=org`):**
-
-Открой: **GitHub → [название org] → Settings → Actions → Runners**
-
-Путь: github.com/YOUR-ORG → вкладка Settings → слева "Actions" → Runners
+`github.com/YOUR-ORG` → Settings → Actions → Runners
 
 > Вкладка Settings видна только если ты owner организации.
 
-### Шаг 3 — запусти тестовый workflow
+**repo scope** — настройки репозитория:
 
-Создай в любом репозитории файл `.github/workflows/test-runner.yml`:
+`github.com/OWNER/REPO` → Settings → Actions → Runners
+
+Runner должен отображаться со статусом **Idle** (зелёная точка).
+
+### 3. Тестовый workflow
+
+Создай в любом репозитории `.github/workflows/test-runner.yml`:
 
 ```yaml
 name: Test self-hosted runner
@@ -147,19 +128,22 @@ jobs:
   test:
     runs-on: [self-hosted, linux, x64]
     steps:
-      - run: echo "Runner работает! Hostname: $(hostname)"
-      - run: docker --version
+      - name: Check runner
+        run: |
+          echo "Runner works!"
+          echo "Host: $(hostname)"
+          echo "Date: $(date)"
+      - name: Check docker
+        run: docker --version
 ```
 
-Затем: **репозиторий → Actions → "Test self-hosted runner" → Run workflow**
+Запусти вручную: репозиторий → Actions → "Test self-hosted runner" → Run workflow.
 
-Если job завершился успешно — runner полностью работает, включая docker-in-docker.
+Лейблы в `runs-on` должны совпадать с теми, что ты задал при настройке.
 
 ---
 
-## Использование runner'а в workflow
-
-После регистрации используй лейблы в `runs-on`:
+## Использование в workflow
 
 ```yaml
 jobs:
@@ -167,71 +151,70 @@ jobs:
     runs-on: [self-hosted, linux, x64]
     steps:
       - uses: actions/checkout@v4
-      - run: echo "Running on self-hosted runner"
+      - run: make build
 ```
-
-Лейблы должны совпадать с тем, что указано в `LABELS` в `.env`.
 
 ---
 
 ## Управление
 
 ```bash
-# Запустить
-docker compose up -d --build
+# Первичная настройка
+docker compose run --rm runner
 
-# Посмотреть логи
+# Перенастроить (заменить регистрацию)
+docker compose run --rm runner --setup
+
+# Запустить в фоне
+docker compose up -d
+
+# Логи
 docker compose logs -f
-
-# Остановить (runner деregistрируется)
-docker compose down
 
 # Перезапустить
 docker compose restart
 
-# Пересобрать после изменений
-docker compose up -d --build
+# Остановить
+docker compose down
 ```
 
 ---
 
 ## Персистентность
 
-Конфиг runner'а хранится в Docker volume `runner-data` (путь внутри контейнера: `/runner-data`). При рестарте контейнера повторная регистрация не происходит — runner просто переподключается к GitHub.
+Конфиг runner'а хранится в Docker volume `runner_data`. При рестарте контейнера повторная регистрация не происходит.
 
-Чтобы **принудительно перерегистрировать** runner:
+Чтобы полностью сбросить и зарегистрировать заново:
 
 ```bash
 docker compose down
-docker volume rm github-runner_runner-data
-docker compose up -d --build
+docker volume rm runners_deploy_runner_data
+docker compose run --rm runner
 ```
 
 ---
 
 ## Устранение проблем
 
-**Контейнер падает сразу после запуска**
+**`Runner is not configured. Run setup first`**
 
-Смотри логи:
+Запусти настройку:
 ```bash
-docker compose logs github-runner
+docker compose run --rm runner
 ```
 
-Частые причины:
-- `ACCESS_TOKEN not set` — не заполнен `.env`
-- `Failed to get registration token` — токен невалидный или истёк, либо нет нужных scopes
-- `GITHUB_USERNAME is required` — не указан username
+**Registration failed**
 
-**Runner появился в GitHub, но workflow не запускается**
+Токен истёк (действует 1 час) или неверные scopes. Получи новый токен и запусти настройку снова.
 
-Проверь, что лейблы в `runs-on` в workflow совпадают с `LABELS` в `.env`.
+**Runner есть в GitHub UI, но workflow не стартует**
+
+Лейблы в `runs-on` не совпадают с теми, что заданы при регистрации. Проверь в GitHub UI какие лейблы у runner'а.
 
 **Docker-in-Docker не работает**
 
-Убедись, что сокет доступен на хосте:
 ```bash
 ls -la /var/run/docker.sock
 ```
 
-Если нет — docker daemon не запущен на хосте.
+Если файла нет — docker daemon не запущен на хосте.

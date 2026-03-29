@@ -1,0 +1,12 @@
+name: Lint - dotenv-linter
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  lint:
+    runs-on: [self-hosted, linux, x64]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/lint-dotenv

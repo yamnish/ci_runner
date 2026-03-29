@@ -1,0 +1,14 @@
+name: Lint - dotenv-linter
+description: Run dotenv-linter on .env.example files
+
+runs:
+  using: composite
+  steps:
+    - name: Run dotenv-linter
+      shell: bash
+      run: |
+        docker run --rm \
+          -v "$(pwd):/workdir" \
+          -w /workdir \
+          linter-dotenv:latest \
+          $(find . \( -name '*.env.example' -o -name '.env.example' \) -not -path './.git/*')
