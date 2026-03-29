@@ -11,4 +11,4 @@ runs:
           -v "$(pwd):/workdir" \
           -w /workdir \
           linter-shellcheck:latest \
-          sh -c 'find . -name "*.sh" -not -path "./.git/*" | xargs shellcheck'
+          sh -c 'find . -name "*.sh" -not -path "./.git/*" | xargs -r shellcheck'

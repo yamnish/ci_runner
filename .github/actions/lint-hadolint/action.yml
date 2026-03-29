@@ -11,4 +11,4 @@ runs:
           -v "$(pwd):/workdir" \
           -w /workdir \
           linter-hadolint:latest \
-          sh -c 'find . \( -name "Dockerfile" -o -name "Dockerfile.*" \) -not -path "./.git/*" | xargs hadolint'
+          sh -c 'find . \( -name "Dockerfile" -o -name "Dockerfile.*" \) -not -path "./.git/*" | xargs -r hadolint'
