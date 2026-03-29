@@ -5,48 +5,37 @@ on:
   pull_request:
 
 jobs:
-  build:
-    runs-on: [self-hosted, linux, x64]
-    steps:
-      - uses: yamnish/platform-ci/.github/actions/build-linters@main
-
   lint-shellcheck:
-    needs: build
     runs-on: [self-hosted, linux, x64]
     steps:
       - uses: actions/checkout@v4
       - uses: yamnish/platform-ci/.github/actions/lint-shellcheck@main
 
   lint-hadolint:
-    needs: build
     runs-on: [self-hosted, linux, x64]
     steps:
       - uses: actions/checkout@v4
       - uses: yamnish/platform-ci/.github/actions/lint-hadolint@main
 
   lint-yamllint:
-    needs: build
     runs-on: [self-hosted, linux, x64]
     steps:
       - uses: actions/checkout@v4
       - uses: yamnish/platform-ci/.github/actions/lint-yamllint@main
 
   lint-json:
-    needs: build
     runs-on: [self-hosted, linux, x64]
     steps:
       - uses: actions/checkout@v4
       - uses: yamnish/platform-ci/.github/actions/lint-json@main
 
   lint-markdown:
-    needs: build
     runs-on: [self-hosted, linux, x64]
     steps:
       - uses: actions/checkout@v4
       - uses: yamnish/platform-ci/.github/actions/lint-markdown@main
 
   lint-gitleaks:
-    needs: build
     runs-on: [self-hosted, linux, x64]
     steps:
       - uses: actions/checkout@v4
@@ -55,7 +44,6 @@ jobs:
       - uses: yamnish/platform-ci/.github/actions/lint-gitleaks@main
 
   lint-dotenv:
-    needs: build
     runs-on: [self-hosted, linux, x64]
     steps:
       - uses: actions/checkout@v4
