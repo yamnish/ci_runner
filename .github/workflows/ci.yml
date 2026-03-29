@@ -8,44 +8,42 @@ jobs:
   build:
     runs-on: [self-hosted, linux, x64]
     steps:
-      - uses: actions/checkout@v4
-      - name: Build linter images
-        run: docker compose -f linters/docker-compose.yml build
+      - uses: yamnish/platform-ci/.github/actions/build-linters@main
 
   lint-shellcheck:
     needs: build
     runs-on: [self-hosted, linux, x64]
     steps:
       - uses: actions/checkout@v4
-      - uses: ./.github/actions/lint-shellcheck
+      - uses: yamnish/platform-ci/.github/actions/lint-shellcheck@main
 
   lint-hadolint:
     needs: build
     runs-on: [self-hosted, linux, x64]
     steps:
       - uses: actions/checkout@v4
-      - uses: ./.github/actions/lint-hadolint
+      - uses: yamnish/platform-ci/.github/actions/lint-hadolint@main
 
   lint-yamllint:
     needs: build
     runs-on: [self-hosted, linux, x64]
     steps:
       - uses: actions/checkout@v4
-      - uses: ./.github/actions/lint-yamllint
+      - uses: yamnish/platform-ci/.github/actions/lint-yamllint@main
 
   lint-json:
     needs: build
     runs-on: [self-hosted, linux, x64]
     steps:
       - uses: actions/checkout@v4
-      - uses: ./.github/actions/lint-json
+      - uses: yamnish/platform-ci/.github/actions/lint-json@main
 
   lint-markdown:
     needs: build
     runs-on: [self-hosted, linux, x64]
     steps:
       - uses: actions/checkout@v4
-      - uses: ./.github/actions/lint-markdown
+      - uses: yamnish/platform-ci/.github/actions/lint-markdown@main
 
   lint-gitleaks:
     needs: build
@@ -54,11 +52,11 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - uses: ./.github/actions/lint-gitleaks
+      - uses: yamnish/platform-ci/.github/actions/lint-gitleaks@main
 
   lint-dotenv:
     needs: build
     runs-on: [self-hosted, linux, x64]
     steps:
       - uses: actions/checkout@v4
-      - uses: ./.github/actions/lint-dotenv
+      - uses: yamnish/platform-ci/.github/actions/lint-dotenv@main

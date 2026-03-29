@@ -1,1 +1,0 @@
-FROM pipelinecomponents/yamllint:latest
