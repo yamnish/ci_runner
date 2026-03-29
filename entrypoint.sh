@@ -25,6 +25,11 @@ if [ -f "${CONFIG_FILE}" ]; then
               "${DATA_DIR}/.env"
         # fall through to wizard
     else
+        # Fix docker group GID to match host socket permissions
+        if [ -n "${DOCKER_GROUP_GID}" ]; then
+            groupmod -g "${DOCKER_GROUP_GID}" docker
+        fi
+
         # Restore config from volume and start runner
         for f in .runner .credentials .credentials_rsaparams .env; do
             [ -f "${DATA_DIR}/${f}" ] && cp "${DATA_DIR}/${f}" "${RUNNER_DIR}/"

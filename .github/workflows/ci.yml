@@ -1,0 +1,64 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    runs-on: [self-hosted, linux, x64]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build linter images
+        run: docker compose -f linters/docker-compose.yml build
+
+  lint-shellcheck:
+    needs: build
+    runs-on: [self-hosted, linux, x64]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/lint-shellcheck
+
+  lint-hadolint:
+    needs: build
+    runs-on: [self-hosted, linux, x64]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/lint-hadolint
+
+  lint-yamllint:
+    needs: build
+    runs-on: [self-hosted, linux, x64]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/lint-yamllint
+
+  lint-json:
+    needs: build
+    runs-on: [self-hosted, linux, x64]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/lint-json
+
+  lint-markdown:
+    needs: build
+    runs-on: [self-hosted, linux, x64]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/lint-markdown
+
+  lint-gitleaks:
+    needs: build
+    runs-on: [self-hosted, linux, x64]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: ./.github/actions/lint-gitleaks
+
+  lint-dotenv:
+    needs: build
+    runs-on: [self-hosted, linux, x64]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/lint-dotenv
