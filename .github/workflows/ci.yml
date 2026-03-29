@@ -6,45 +6,22 @@ on:
 
 jobs:
   lint-shellcheck:
-    runs-on: [self-hosted, linux, x64]
-    steps:
-      - uses: actions/checkout@v4
-      - uses: yamnish/platform-ci/.github/actions/lint-shellcheck@main
+    uses: yamnish/platform-ci/.github/workflows/lint-shellcheck.yml@main
 
   lint-hadolint:
-    runs-on: [self-hosted, linux, x64]
-    steps:
-      - uses: actions/checkout@v4
-      - uses: yamnish/platform-ci/.github/actions/lint-hadolint@main
+    uses: yamnish/platform-ci/.github/workflows/lint-hadolint.yml@main
 
   lint-yamllint:
-    runs-on: [self-hosted, linux, x64]
-    steps:
-      - uses: actions/checkout@v4
-      - uses: yamnish/platform-ci/.github/actions/lint-yamllint@main
+    uses: yamnish/platform-ci/.github/workflows/lint-yamllint.yml@main
 
   lint-json:
-    runs-on: [self-hosted, linux, x64]
-    steps:
-      - uses: actions/checkout@v4
-      - uses: yamnish/platform-ci/.github/actions/lint-json@main
+    uses: yamnish/platform-ci/.github/workflows/lint-json.yml@main
 
   lint-markdown:
-    runs-on: [self-hosted, linux, x64]
-    steps:
-      - uses: actions/checkout@v4
-      - uses: yamnish/platform-ci/.github/actions/lint-markdown@main
+    uses: yamnish/platform-ci/.github/workflows/lint-markdown.yml@main
 
   lint-gitleaks:
-    runs-on: [self-hosted, linux, x64]
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - uses: yamnish/platform-ci/.github/actions/lint-gitleaks@main
+    uses: yamnish/platform-ci/.github/workflows/lint-gitleaks.yml@main
 
   lint-dotenv:
-    runs-on: [self-hosted, linux, x64]
-    steps:
-      - uses: actions/checkout@v4
-      - uses: yamnish/platform-ci/.github/actions/lint-dotenv@main
+    uses: yamnish/platform-ci/.github/workflows/lint-dotenv.yml@main
